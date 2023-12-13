@@ -6,21 +6,18 @@ import {ApplicationProvider, Calendar} from '@ui-kitten/components';
 
 
 interface DateTimeScreenProps {
+
     handleIsNavigateToBookScreen: () => void;
 }
 
-export default function DateTimeScreen() {
+export default function DateTimeScreen(props: DateTimeScreenProps) {
     const [date, setDate] = React.useState(new Date());
     const [time, setTime] = React.useState(new Date());
 
     return (
         <View style={styles.container}>
             <View style={styles.dateTimeScreen__container_header}>
-                <HeaderComponent
-                    title={"Date and time"}
-                    isNotStartBookScreen={true}
-                    handleNavigateTo={() => {}}
-                />
+
             </View>
             <View style={styles.dateTimeScreen__container_content_wrap}>
                 <View style={styles.dateTimeScreen__container_calendar_wrap}>

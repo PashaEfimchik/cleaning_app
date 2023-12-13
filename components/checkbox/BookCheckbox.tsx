@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {Pressable, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import React from "react";
 import {SFProDisplayRegular} from "../StyledText";
 import Svg, {Path, Rect} from "react-native-svg";
@@ -6,6 +6,8 @@ import Svg, {Path, Rect} from "react-native-svg";
 interface BookCheckBoxProps {
     title: string;
     isChecked: boolean;
+    link: any;
+    onLinkPress: () => void;
     onPress: () => void;
 }
 
@@ -51,7 +53,19 @@ const BookCheckBox = (props: BookCheckBoxProps) => {
                     )
                 }
             </Pressable>
-            <SFProDisplayRegular style={styles.title}>{props.title}</SFProDisplayRegular>
+            <SFProDisplayRegular style={styles.title}>
+                {
+                    props.title
+                }
+            </SFProDisplayRegular>
+            <TouchableOpacity onPress={props.onLinkPress}>
+                <SFProDisplayRegular style={styles.link}>
+                    {
+                        props.link
+                    }
+                </SFProDisplayRegular>
+            </TouchableOpacity>
+            <SFProDisplayRegular style={styles.star}>{props.link ? '*' : ''}</SFProDisplayRegular>
         </View>
     );
 };
@@ -63,7 +77,7 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start",
         alignItems: "center",
         flexDirection: "row",
-        width: 150,
+        width: "100%",
     },
     title: {
         fontSize: 12,
@@ -72,4 +86,18 @@ const styles = StyleSheet.create({
         fontWeight: "400",
         letterSpacing: 0.6,
     },
+    link: {
+        fontSize: 12,
+        color: "#000",
+        marginLeft: 3,
+        fontWeight: "400",
+        letterSpacing: 0.6,
+        textDecorationLine: "underline",
+    },
+    star: {
+        fontSize: 12,
+        color: "#000",
+        fontWeight: "400",
+        letterSpacing: 0.6,
+    }
 });

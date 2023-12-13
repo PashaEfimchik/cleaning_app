@@ -3,23 +3,18 @@ import {View, StyleSheet, TouchableHighlight, Alert} from "react-native";
 import {SFProDisplayLight, SFProDisplayRegular} from "../StyledText";
 import Svg, {Path} from "react-native-svg";
 
-interface HeaderComponentProps {
+interface ProfileHeaderComponentProps {
     title: string;
-    isNotStartBookScreen: boolean;
-    numberOfPage: number;
-    numberOfPages: number;
     handleNavigateTo: () => void;
 }
 
-export default function HeaderComponent(props: HeaderComponentProps) {
+export default function ProfileHeaderComponent (props: ProfileHeaderComponentProps) {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header__container_content}>
-                {
-                    props.isNotStartBookScreen && (
+            <View style={styles.profileHeader__container_content}>
                         <TouchableHighlight
-                            style={styles.header__container_button_wrap}
+                            style={styles.profileHeader__container_button_wrap}
                             onPress={props.handleNavigateTo}
                             underlayColor="transparent"
                         >
@@ -35,15 +30,8 @@ export default function HeaderComponent(props: HeaderComponentProps) {
                                 />
                             </Svg>
                         </TouchableHighlight>
-                    )
-                }
-                <View style={styles.header__container_title_wrap}>
-                    <SFProDisplayRegular style={styles.header__container_title_text}>{props.title}</SFProDisplayRegular>
-                </View>
-                <View style={styles.header__container_content_number_of_page}>
-                    <SFProDisplayRegular style={styles.header__container_content_number_of_page_text}>
-                        {props.numberOfPage}/{props.numberOfPages}
-                    </SFProDisplayRegular>
+                <View style={styles.profileHeader__container_title_wrap}>
+                    <SFProDisplayRegular style={styles.profileHeader__container_title_text}>{props.title}</SFProDisplayRegular>
                 </View>
             </View>
         </View>
@@ -57,34 +45,24 @@ const styles = StyleSheet.create({
         paddingTop: 44,
         height: 100,
     },
-    header__container_content: {
+    profileHeader__container_content: {
         width: "100%",
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "center",
     },
-    header__container_button_wrap: {
-        //position: "absolute",
-        //left: 16,
-        //backgroundColor: "transparent"
+    profileHeader__container_button_wrap: {
+        position: "absolute",
+        left: 16,
+        backgroundColor: "transparent"
     },
-    header__container_title_wrap: {
+    profileHeader__container_title_wrap: {
         alignItems: "center",
     },
-    header__container_title_text: {
+    profileHeader__container_title_text: {
         fontSize: 20,
         color: "#3D3C42",
         fontWeight: "400",
         letterSpacing: 0.4,
-    },
-    header__container_content_number_of_page: {
-        //width: "100%",
-        //alignItems: "flex-end",
-    },
-    header__container_content_number_of_page_text: {
-        fontSize: 16,
-        lineHeight: 24,
-        color: "#3A3A3A",
-        letterSpacing: 0.64,
     },
 });

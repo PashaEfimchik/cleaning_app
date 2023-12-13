@@ -64,3 +64,13 @@ export function InterSemibold(props: TextProps) {
   }
   return <Text {...props} style={[props.style, { fontFamily: 'Inter-Semibold'}]} />;
 }
+
+export function InterLight(props: TextProps) {
+  const [fontsLoaded] = useFonts({
+    'Inter-Light': require('../assets/fonts/Inter-Light.ttf'),
+  });
+  if (!fontsLoaded) {
+    return null;
+  }
+  return <Text {...props} style={[props.style, { fontFamily: 'Inter-Light'}]} />;
+}
