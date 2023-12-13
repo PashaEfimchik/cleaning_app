@@ -1,5 +1,5 @@
 import {View} from "../../Themed";
-import {Dimensions, StyleSheet} from "react-native";
+import {Dimensions, LayoutAnimation, StyleSheet, TouchableOpacity} from "react-native";
 import React, {useEffect, useState} from "react";
 import {SFProDisplayBold, SFProDisplayLight, SFProDisplayRegular, SFProDisplaySemibold} from "../../StyledText";
 import Svg, {Path} from "react-native-svg";
@@ -8,30 +8,28 @@ import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "../../../store/store";
 import {setValue} from "../../../reducers/bookReducer";
 
-export default function PriceDropdownComponent () {
+interface PriceDropdownProps {
+    navigation: any;
+}
+
+export default function PriceDropdownComponent (props: PriceDropdownProps) {
     const dispatch = useDispatch();
+    const height = Dimensions.get('window').height;
+    const width = Dimensions.get('window').width;
+
     const [isOpenFullPriceList, setIsOpenFullPriceList] = useState(false as boolean);
 
-    const apartmentSizePrice = useSelector((state: RootState) => state.book.apartmentSizePrice);
     const serviceType = useSelector((state: RootState) => state.book.serviceType);
     const serviceTypePrice = useSelector((state: RootState) => state.book.serviceTypePrice);
+    const extraServices = useSelector((state: RootState) => state.book.extraServices);
     const extraServicesPrice = useSelector((state: RootState) => state.book.extraServicesPrice);
 
-    const bedroomCountPrice = useSelector((state: RootState) => state.book.bedroomCountPrice);
-    const kitchenCountPrice = useSelector((state: RootState) => state.book.kitchenCountPrice);
-    const bathroomCountPrice = useSelector((state: RootState) => state.book.bathroomCountPrice);
-    const dirtyDegreePrice = useSelector((state: RootState) => state.book.dirtyDegreePrice);
-
-    const cleaningFrequencyType = useSelector((state: RootState) => state.book.cleaningFrequencyType);
+    const executionSpeedPrice = useSelector((state: RootState) => state.book.executionSpeedPrice);
 
     const subTotalPrice =
-        apartmentSizePrice +
         serviceTypePrice +
         extraServicesPrice +
-        bedroomCountPrice +
-        kitchenCountPrice +
-        bathroomCountPrice +
-        dirtyDegreePrice
+        executionSpeedPrice
     ;
     const taxPrice = subTotalPrice * 0.21;
     const totalPrice = subTotalPrice + taxPrice;
@@ -40,14 +38,43 @@ export default function PriceDropdownComponent () {
         dispatch(setValue({ key: "subTotalPrice", value: subTotalPrice }));
         dispatch(setValue({ key: "taxPrice", value: taxPrice }));
         dispatch(setValue({ key: "totalPrice", value: totalPrice }));
-    }, [totalPrice]);
+    }, [dispatch, subTotalPrice, taxPrice, totalPrice, props.navigation, serviceType, extraServices]);
 
-    //const totalPrice = useSelector((state: RootState) => state.book.totalPrice);
-    //const subTotalPrice = useSelector((state: RootState) => state.book.subTotalPrice);
-    //const taxPrice = useSelector((state: RootState) => state.book.taxPrice);
+    const handleToggleFullPriceList = () => {
+        LayoutAnimation.configureNext({
+            duration: 200,
+            create: {
+                type: LayoutAnimation.Types.linear,
+                property: LayoutAnimation.Properties.opacity,
+            },
+            update: {
+                type: LayoutAnimation.Types.linear,
+            },
+            delete: {
+                type: LayoutAnimation.Types.linear,
+                property: LayoutAnimation.Properties.opacity,
+            }
+        });
+        setIsOpenFullPriceList(!isOpenFullPriceList);
+    }
 
-    const { height } = Dimensions.get('window');
-    const { width } = Dimensions.get('window');
+    /*const handleCloseFullPriceList = () => {
+        LayoutAnimation.configureNext({
+            duration: 200,
+            create: {
+                type: LayoutAnimation.Types.linear,
+                property: LayoutAnimation.Properties.opacity,
+            },
+            update: {
+                type: LayoutAnimation.Types.linear,
+            },
+            delete: {
+                type: LayoutAnimation.Types.linear,
+                property: LayoutAnimation.Properties.opacity,
+            }
+        });
+        setIsOpenFullPriceList(false);
+    }*/
 
     return (
         <View style={styles.container}>
@@ -56,115 +83,124 @@ export default function PriceDropdownComponent () {
                     <View style={{
                         width: width,
                         backgroundColor: "rgba(0, 0, 0, 0.50)",
-                        height: height - 333,
+                        height:
+                            serviceType ? extraServices.length > 1 ? height -226 - (extraServices.length -1) * 28 : height - 226 : height - 196,
                         position: "absolute",
                         top: 105 - height, //97
                         left: 0,
                     }}
-                          onTouchStart={() => setIsOpenFullPriceList(false)}
+                          onTouchStart={() => handleToggleFullPriceList()}
                     >
                     </View>
                 )
             }
             <View style={styles.priceDropdown__container_price_wrap}>
                 {
-                isOpenFullPriceList ?
-                    (
+                    !isOpenFullPriceList && (
+                        <Shadow
+                            startColor={"#efefef"}
+                            endColor={"rgba(255,255,255,0)"}
+                            distance={60}
+                            offset={[0, -64]}
+                            paintInside={false}
+                            style={{
+                                width: "100%",
+                                paddingLeft: 16,
+                                paddingRight: 16,
+                            }}
+                            sides={{
+                                start: false,
+                                end: false,
+                                top: true,
+                                bottom: false,
+                            }}
+                            corners={{
+                                topStart: true,
+                                topEnd: true,
+                                bottomStart: false,
+                                bottomEnd: false,
+                            }}
+                        />
+                    )
+                }
+
+                <TouchableOpacity
+                        activeOpacity={1}
+                        style={[
+                            styles.priceDropdown__container_price_content_close,
+                            {
+                                backgroundColor: "#fff",
+                                marginTop:
+                                    isOpenFullPriceList ?
+                                        serviceType ?
+                                            executionSpeedPrice > 0 ?
+                                                extraServices.length > 1 ?
+                                                    -256 - (extraServices.length - 1) * 32
+                                                    :
+                                                    -246
+                                                :
+                                                extraServices.length > 1 ?
+                                                    -216 - (extraServices.length - 1) * 32
+                                                    :
+                                                    -216
+                                            :
+                                            -186
+                                        : -84,
+                                height: "auto",
+                            }
+                        ]}
+                        onPress={() => handleToggleFullPriceList()}
+                    >
+                    <View style={styles.priceDropdown__container_price_content_button_wrap}>
                         <View
-                            style={[styles.priceDropdown__container_price_content_open, {
-                                height: extraServicesPrice > 0 ? 270 : 230,
-                                marginTop: extraServicesPrice > 0 ? -276 : -246,
-                            }]}
-                            onTouchStart={() => setIsOpenFullPriceList(false)}
-                        >
-                            <View style={styles.priceDropdown__container_price_content_open_price_wrap}>
-                                <View
-                                    style={styles.priceDropdown__container_price_content_open_button_wrap}>
-                                    <Svg
-                                        width="24"
-                                        height="24"
-                                        fill="none"
-                                    >
+                            style={styles.priceDropdown__container_price_content_close_button_wrap}>
+                            <Svg
+                                width="24"
+                                height="24"
+                                fill="none"
+                            >
+                                {
+                                    isOpenFullPriceList ? (
                                         <Path
                                             d="M6 14.5L12 8.5L18 14.5"
                                             stroke="black"
                                         />
-                                    </Svg>
-                                </View>
-                                <SFProDisplayLight
-                                    style={styles.priceDropdown__container_price_content_close_text}>
-                                    Price
-                                </SFProDisplayLight>
-                                <View
-                                    style={{
-                                        backgroundColor: 'rgb(232,231,231)',
-                                        borderRadius: 4,
-                                        height: 1,
-                                        flex: 1,
-                                        alignItems: 'flex-end',
-                                        marginTop: 22,
-                                    }}>
-                                </View>
-                                <View style={styles.priceDropdown__container_price_content_close_price_cost}>
-                                    <SFProDisplayRegular
-                                        style={styles.priceDropdown__container_price_content_close_price_cost_text}
-                                    >
-                                        €{isNaN(subTotalPrice) ? '' : subTotalPrice.toFixed(2)}
-                                    </SFProDisplayRegular>
-                                </View>
-                            </View>
-                            <View style={styles.priceDropdown__container_price_content_open_tax_price_wrap}>
-                                {
-                                    serviceType && (
-                                        <View style={styles.priceDropdown__container_price_content_open_service_type}>
-                                            <View style={styles.priceDropdown__container_price_content_open_service_type_wrap}>
-                                                <SFProDisplayBold style={styles.priceDropdown__container_price_content_open_service_type_text}>{
-                                                        serviceType
-                                                    } </SFProDisplayBold>
-                                                {
-                                                    cleaningFrequencyType && (
-                                                        <SFProDisplayBold style={styles.priceDropdown__container_price_content_open_service_type_text}>
-                                                            ({cleaningFrequencyType})
-                                                        </SFProDisplayBold>
-                                                    )
-                                                }
-                                            </View>
-                                            <SFProDisplayBold style={styles.priceDropdown__container_price_content_open_service_type_text}>
-                                                €{
-                                                    serviceTypePrice
-                                                }
-                                            </SFProDisplayBold>
-                                        </View>
+                                    ) : (
+                                        <Path
+                                            d="M6 10L12 16L18 10"
+                                            stroke="black"
+                                        />
                                     )
                                 }
-                                <View>
-                                    {
-                                        extraServicesPrice > 0 && (
-                                            <View style={styles.priceDropdown__container_price_content_open_extra_service_type}>
-                                                <SFProDisplayLight style={styles.priceDropdown__container_price_content_open_extra_service_type_text}>
-                                                    Extra services
-                                                </SFProDisplayLight>
-                                                <SFProDisplayLight style={styles.priceDropdown__container_price_content_open_extra_service_type_text}>
-                                                    €{
-                                                    extraServicesPrice
-                                                }
-                                                </SFProDisplayLight>
-                                            </View>
-                                        )
-                                    }
-                                </View>
-                                <View style={{flexDirection: "row"}}>
-                                    <View
-                                        style={{
-                                            backgroundColor: 'rgb(232,231,231)',
-                                            borderRadius: 4,
-                                            height: 1,
-                                            flex: 1,
-                                            alignItems: 'flex-end',
-                                            marginTop: 20,
-                                        }}>
-                                    </View>
-                                </View>
+                            </Svg>
+                        </View>
+                        <SFProDisplayBold
+                            style={styles.priceDropdown__container_price_content_close_text}>
+                            Total
+                        </SFProDisplayBold>
+                        <View
+                            style={{
+                                marginLeft: 5,
+                                backgroundColor: 'rgb(232,231,231)',
+                                borderRadius: 4,
+                                height: 1,
+                                flex: 1,
+                                alignItems: 'flex-end',
+                                marginTop: 22,
+                            }}>
+                        </View>
+                        <View style={styles.priceDropdown__container_price_content_close_price_cost}>
+                            <SFProDisplaySemibold
+                                style={styles.priceDropdown__container_price_content_close_price_cost_text}
+                            >
+                                €{isNaN(totalPrice) ? '' : totalPrice.toFixed(2)}
+                            </SFProDisplaySemibold>
+                        </View>
+                    </View>
+                    {
+                        isOpenFullPriceList && (
+                            <View
+                                style={styles.priceDropdown__container_price_content_open}>
                                 <View style={styles.priceDropdown__container_price_content_open_subTotal_price}>
                                     <SFProDisplayRegular
                                         style={styles.priceDropdown__container_price_content_open_tax_price_text}>
@@ -203,96 +239,74 @@ export default function PriceDropdownComponent () {
                                         }}>
                                     </View>
                                 </View>
-                            </View>
-                            <View style={[
-                                styles.priceDropdown__container_price_content_open_total_price_wrap,
-                                {
-                                    paddingBottom: height > 750 ? 20 : 0,
-                                }
-                            ]}>
-                                <SFProDisplayBold
-                                    style={styles.priceDropdown__container_price_content_open_total_price_text}>
-                                    Total
-                                </SFProDisplayBold>
-                                <View style={styles.priceDropdown__container_price_content_open_total_price_cost}>
-                                    <SFProDisplaySemibold
-                                        style={styles.priceDropdown__container_price_content_open_total_price_cost_text}
-                                    >
-                                        €{isNaN(totalPrice) ? '' : totalPrice.toFixed(2)}
-                                    </SFProDisplaySemibold>
+
+                                <View style={styles.priceDropdown__container_price_content_open_tax_price_wrap}>
+                                    {
+                                        serviceType && (
+                                            <View style={styles.priceDropdown__container_price_content_open_service_type}>
+                                                <View style={styles.priceDropdown__container_price_content_open_service_type_wrap}>
+                                                    <SFProDisplayLight style={styles.priceDropdown__container_price_content_open_service_type_text}>{
+                                                        serviceType
+                                                    } </SFProDisplayLight>
+                                                </View>
+                                                <SFProDisplayLight style={styles.priceDropdown__container_price_content_open_service_type_text}>
+                                                    €{serviceTypePrice.toFixed(2)}
+                                                </SFProDisplayLight>
+                                            </View>
+                                        )
+                                    }
+                                    <View>
+                                        {
+                                            extraServices.length > 1 && (
+                                                <View style={styles.priceDropdown__container_price_content_open_extra_service_type}>
+                                                    {
+                                                        extraServices.map((extra: any, index: any) => (
+                                                            <View key={index} style={{ flexDirection: "row", justifyContent: "space-between", paddingTop: 10, }}>
+                                                                {
+                                                                    extra.value && (
+                                                                        <>
+                                                                            <SFProDisplayLight style={styles.priceDropdown__container_price_content_open_extra_service_type_text}>
+                                                                                {extra.value}
+                                                                            </SFProDisplayLight>
+
+                                                                            <SFProDisplayLight style={styles.priceDropdown__container_price_content_open_extra_service_type_text}>
+                                                                                €{extra.price.toFixed(2)}
+                                                                            </SFProDisplayLight>
+                                                                        </>
+                                                                    )
+                                                                }
+                                                            </View>
+                                                        ))
+                                                    }
+                                                </View>
+                                            )
+                                        }
+                                    </View>
+                                    <View>
+                                        {
+                                            executionSpeedPrice > 0 && (
+                                                <View style={styles.priceDropdown__container_price_content_open_service_type}>
+                                                    <View style={styles.priceDropdown__container_price_content_open_service_type_wrap}>
+                                                        <SFProDisplayLight style={styles.priceDropdown__container_price_content_open_service_type_text}>
+                                                            How fast
+                                                        </SFProDisplayLight>
+                                                    </View>
+                                                    <SFProDisplayLight style={styles.priceDropdown__container_price_content_open_service_type_text}>
+                                                        €{executionSpeedPrice.toFixed(2)}
+                                                    </SFProDisplayLight>
+                                                </View>
+                                            )
+                                        }
+                                    </View>
                                 </View>
                             </View>
-                        </View>
-                    ) : (
-                        <Shadow
-                            startColor={"#efefef"}
-                            endColor={"rgba(255,255,255,0)"}
-                            distance={60}
-                            offset={[0, -84]}
-                            paintInside={false}
-                            style={{
-                                width: "100%",
-                                paddingLeft: 16,
-                                paddingRight: 16,
-                            }}
-                            sides={{
-                                start: false,
-                                end: false,
-                                top: true,
-                                bottom: false,
-                            }}
-                            corners={{
-                                topStart: true,
-                                topEnd: true,
-                                bottomStart: false,
-                                bottomEnd: false,
-                            }}
-                        >
-                        <View
-                            style={styles.priceDropdown__container_price_content_close}
-                            onTouchStart={() => setIsOpenFullPriceList(true)}
-                        >
-                            <View
-                                style={styles.priceDropdown__container_price_content_close_button_wrap}>
-                                <Svg
-                                    width="24"
-                                    height="24"
-                                    fill="none"
-                                >
-                                    <Path
-                                        d="M6 10L12 16L18 10"
-                                        stroke="black"
-                                    />
-                                </Svg>
-                            </View>
-                            <SFProDisplayLight
-                                style={styles.priceDropdown__container_price_content_close_text}>
-                                Price
-                            </SFProDisplayLight>
-                            <View
-                                style={{
-                                    marginLeft: 5,
-                                    backgroundColor: 'rgb(232,231,231)',
-                                    borderRadius: 4,
-                                    height: 1,
-                                    flex: 1,
-                                    alignItems: 'flex-end',
-                                    marginTop: 22,
-                                }}>
-                            </View>
-                            <View style={styles.priceDropdown__container_price_content_close_price_cost}>
-                                <SFProDisplayRegular
-                                    style={styles.priceDropdown__container_price_content_close_price_cost_text}
-                                >
-                                    €{isNaN(subTotalPrice) ? '' : subTotalPrice.toFixed(2)}
-                                </SFProDisplayRegular>
-                            </View>
-                        </View>
-                        </Shadow>
-                    )
-                }
+                        )
+                    }
+
+
+                    </TouchableOpacity>
             </View>
-</View>
+        </View>
     );
 }
 
@@ -300,7 +314,7 @@ const styles = StyleSheet.create({
     container: {
         width: "100%",
         flex: 1,
-        //backgroundColor: "#8f8",
+        backgroundColor: "#da33ff",
         borderRadius: 4,
     },
 
@@ -311,19 +325,21 @@ const styles = StyleSheet.create({
 /*
         paddingBottom: 10,
 */
+
     },
     priceDropdown__container_price_content_open_service_type_wrap: {
         flexDirection: "row",
+
     },
     priceDropdown__container_price_content_open_extra_service_type: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        paddingTop: 10,
+        flexDirection: "column",
+        //paddingTop: 10,
     },
     priceDropdown__container_price_content_open_service_type_text: {
         color: "#3A3A3A",
-        fontWeight: "700",
+        fontWeight: "300",
         fontSize: 18,
+        lineHeight: 24,
         letterSpacing: 0.36,
     },
     priceDropdown__container_price_content_open_extra_service_type_text: {
@@ -331,6 +347,7 @@ const styles = StyleSheet.create({
         fontWeight: "300",
         fontSize: 18,
         letterSpacing: 0.36,
+
     },
     priceDropdown__container_price_wrap: {
 /*
@@ -351,6 +368,12 @@ const styles = StyleSheet.create({
         //paddingLeft: 16,
         //paddingRight: 16,
     },
+    priceDropdown__container_price_content_button_wrap: {
+        width: "100%",
+        flexDirection: "row",
+        paddingLeft: 16,
+        paddingRight: 16,
+    },
     priceDropdown__container_price_content_close_button_wrap: {
         width: 20,
         height: 20,
@@ -360,6 +383,7 @@ const styles = StyleSheet.create({
         marginTop: 3,
     },
     priceDropdown__container_price_content_close_button: {
+
     },
     priceDropdown__container_price_content_open_button_wrap: {
         width: 20,
@@ -371,6 +395,7 @@ const styles = StyleSheet.create({
     },
     priceDropdown__container_price_content_open_tax_price_wrap: {
         flexDirection: 'column',
+
     },
     priceDropdown__container_price_content_open_total_price_wrap: {
         // backgroundColor: "#F3f",
@@ -380,14 +405,19 @@ const styles = StyleSheet.create({
     },
     priceDropdown__container_price_content_close: {
         /*height: 24,*/
-        height: 84,
-        marginTop: -84,
-        paddingTop: 20,
-        paddingBottom: 40,
-        justifyContent: 'space-between',
-        flexDirection: 'row',
+        //height: 84,
+        //marginTop: -84,
+        paddingTop: 24,
+        paddingBottom: 34,
+        flexDirection: 'column',
         flex: 1,
-        //backgroundColor: '#7a126c',
+        width: "100%",
+        //paddingLeft: 16,
+        //paddingRight: 16,
+        backgroundColor: '#ffffff',
+        borderTopLeftRadius: 4,
+        borderTopRightRadius: 4,
+        overflow: "hidden",
     },
 
     priceDropdown__container_price_content_open: {
@@ -407,11 +437,12 @@ const styles = StyleSheet.create({
     },
     priceDropdown__container_price_content_close_text: {
         marginTop: 5,
-        color: '#000',
-        fontSize: 24,
+        color: "#3A3A3A",
+        fontSize: 18,
         fontStyle: 'normal',
-        fontWeight: '300',
+        fontWeight: '700',
         lineHeight: 24,
+        letterSpacing: 0.36,
     },
     priceDropdown__container_price_content_close_price_cost: {
         marginTop: 5,
@@ -419,12 +450,12 @@ const styles = StyleSheet.create({
         backgroundColor: "transparent",
     },
     priceDropdown__container_price_content_close_price_cost_text: {
-        color: '#000',
-        fontSize: 24,
+        color: "#3A3A3A",
+        fontSize: 18,
         fontStyle: 'normal',
-        fontWeight: '400',
+        fontWeight: '600',
         lineHeight: 24,
-
+        letterSpacing: 0.36,
     },
 
     priceDropdown__container_price_content_open_subTotal_price: {

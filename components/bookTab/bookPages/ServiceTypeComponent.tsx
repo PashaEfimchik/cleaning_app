@@ -6,9 +6,10 @@ import {RadioButtonProps} from "../bookComponents/BookRadioButton";
 import HeaderComponent from "../../header/HeaderComponent";
 import PriceDropdownComponent from "../bookComponents/PriceDropdownComponent";
 import BookButtonComponent from "../bookComponents/BookButtonComponent";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {setValue} from "../../../reducers/bookReducer";
 import {SFProDisplayRegular} from "../../StyledText";
+import {RootState} from "../../../store/store";
 
 
 interface ServiceTypeComponentProps {
@@ -21,58 +22,67 @@ export default function ServiceTypeComponent (props: ServiceTypeComponentProps) 
     const dispatch = useDispatch();
     const [selectedServiceType, setSelectedServiceType] = useState('1' as string);
 
-    const { height } = Dimensions.get('window');
-    //const contentHeight = height /*height > 750 ? height - 243 : height - 225*/;
+    const apartmentSizePrice = useSelector((state: RootState) => state.book.apartmentSizePrice);
 
-    // @ts-ignore
-    const radioButtons: RadioButtonProps[] = useMemo(() => ([
+    const bedroomCountPrice = useSelector((state: RootState) => state.book.bedroomCountPrice);
+    const kitchenCountPrice = useSelector((state: RootState) => state.book.kitchenCountPrice);
+    const bathroomCountPrice = useSelector((state: RootState) => state.book.bathroomCountPrice);
+    //const dirtyDegreePrice = useSelector((state: RootState) => state.book.dirtyDegreePrice);
+
+    const radioButtons =  [
         {
             id: '1',
             label: 'Basic',
             value: 'Basic',
-            price: 12,
+            price: ((apartmentSizePrice + bathroomCountPrice + bedroomCountPrice + kitchenCountPrice) * 1).toFixed(2),
             clockwise: '',
         },
         {
             id: '2',
             label: 'Detailed',
             value: 'Detailed',
-            price: 15,
+            price: ((apartmentSizePrice + bathroomCountPrice + bedroomCountPrice + kitchenCountPrice) * 1.2).toFixed(2),
             clockwise: '',
         },
         {
             id: '3',
             label: 'Move in/out',
             value: 'Move in/out',
-            price: 17,
+            price: ((apartmentSizePrice + bathroomCountPrice + bedroomCountPrice + kitchenCountPrice) * 1.3).toFixed(2),
             clockwise: '',
         },
         {
             id: '4',
             label: 'After building',
             value: 'After building',
-            price: 18,
+            price: ((apartmentSizePrice + bathroomCountPrice + bedroomCountPrice + kitchenCountPrice) * 1.4).toFixed(2),
             clockwise: '',
         },
         {
             id: '5',
             label: 'After party',
             value: 'After party',
-            price: 19,
+            price: ((apartmentSizePrice + bathroomCountPrice + bedroomCountPrice + kitchenCountPrice) * 1.5).toFixed(2),
             clockwise: '',
         },
+    ];
 
-    ]), []);
+
+    const { height } = Dimensions.get('window');
+    //const contentHeight = height /*height > 750 ? height - 243 : height - 225*/;
+
 
     const handleServiceType = (newServiceType: string) => {
         setSelectedServiceType(newServiceType);
         if (newServiceType) {
-            dispatch(setValue({ key: "serviceType", value: radioButtons[parseFloat(newServiceType) - 1].value as string}));
-            dispatch(setValue({ key: "serviceTypePrice", value: parseFloat(radioButtons[parseFloat(newServiceType) - 1].price!)}));
+            dispatch(setValue({key: "serviceType", value: radioButtons[parseFloat(newServiceType) - 1].value as string}));
+            dispatch(setValue({key: "serviceTypePrice", value: parseFloat(radioButtons[parseFloat(newServiceType) - 1].price!)}));
         }
     }
 
     useEffect(() => {
+        console.log("useEffect: ", (apartmentSizePrice + bathroomCountPrice + bedroomCountPrice + kitchenCountPrice).toFixed(2));
+
         handleServiceType(selectedServiceType);
     }, []);
 
@@ -84,7 +94,10 @@ export default function ServiceTypeComponent (props: ServiceTypeComponentProps) 
                     isNotStartBookScreen={true}
                     numberOfPage={2}
                     numberOfPages={8}
-                    handleNavigateTo={() => props.navigation.goBack()/*props.handleIsNavigateToApartmentSize*/}/>
+                    handleNavigateTo={() => {
+
+                        props.navigation.goBack();
+                    }}/>
             </View>
             <View style={{height: height - 310}}>
                 <ScrollView style={styles.serviceType__container_content_wrap}>
@@ -112,7 +125,7 @@ export default function ServiceTypeComponent (props: ServiceTypeComponentProps) 
                 {marginTop: height > 750 ? 0 : height - 115}
             ]}>
                 <View style={styles.serviceType__container_content_price}>
-                    <PriceDropdownComponent />
+                    <PriceDropdownComponent navigation={props.navigation} />
                 </View>
                 <View style={styles.serviceType__container_next_button_wrap}>
                     <BookButtonComponent

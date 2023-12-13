@@ -214,7 +214,7 @@ export default function ApartmentSizeComponent (props: ApartmentSizeProps) {
                 {marginTop: height > 750 ? 0 : height - 115}
             ]}>
                 <View style={styles.apartmentSize__container_content_price}>
-                    <PriceDropdownComponent />
+                    <PriceDropdownComponent navigation={props.navigation}/>
                 </View>
                 <View style={styles.apartmentSize__container_next_button_wrap}>
                     <BookButtonComponent
@@ -276,6 +276,7 @@ const styles = StyleSheet.create({
     apartmentSize__container_content_bathrooms_count_wrap: {
         position: "relative",
         height: 85,
+        marginTop: 10,
     },
     apartmentSize__container_content_bathrooms_count_wrap_label_text: {
         color: "#3A3A3A",

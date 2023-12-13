@@ -1,15 +1,13 @@
 import React, {useEffect, useState} from "react";
-import {Alert, Dimensions, ScrollView, StyleSheet, TouchableHighlight, TouchableOpacity} from "react-native";
+import {Dimensions, ScrollView, StyleSheet, TouchableOpacity} from "react-native";
 import {View} from "../../Themed";
 import HeaderComponent from "../../header/HeaderComponent";
-import BookBelowHeaderComponent from "../bookComponents/BookBelowHeaderComponent";
 import BookButtonComponent from "../bookComponents/BookButtonComponent";
 import PriceDropdownComponent from "../bookComponents/PriceDropdownComponent";
 import {SFProDisplayLight} from "../../StyledText";
 import Svg, {Path} from "react-native-svg";
 import {useDispatch} from "react-redux";
 import {setExtraService, setValue} from "../../../reducers/bookReducer";
-import {Button} from "@ui-kitten/components";
 
 interface ExtraServicesComponentProps {
     navigation: any;
@@ -24,14 +22,14 @@ interface ExtraService {
 }
 
 const dataExtraServices: ExtraService[] = ([
-    {value: "Inside fridge", price: 10, count: 1},
-    {value: "Inside oven", price: 11, count: 1},
-    {value: "Inside dishwasher", price: 12, count: 1},
-    {value: "Inside washer/dryer", price: 13, count: 1},
-    {value: "Inside microwave", price: 14, count: 1},
-    {value: "Inside kitchen cabinets", price: 15, count: 1},
-    {value: "Inside windows", price: 16, count: 1},
-    {value: "Tile walls", price: 17, count: 1},
+    {value: "Inside fridge", price: 10, count: 0},
+    {value: "Inside oven", price: 11, count: 0},
+    {value: "Inside dishwasher", price: 12, count: 0},
+    {value: "Inside washer/dryer", price: 13, count: 0},
+    {value: "Inside microwave", price: 14, count: 0},
+    {value: "Inside kitchen cabinets", price: 15, count: 0},
+    {value: "Inside windows", price: 16, count: 0},
+    {value: "Tile walls", price: 17, count: 0},
 ])
 
 export default function ExtraServicesComponent (props: ExtraServicesComponentProps) {
@@ -39,31 +37,58 @@ export default function ExtraServicesComponent (props: ExtraServicesComponentPro
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [selectPrice, setSelectPrice] = useState(0);
 
-    const [countDataExtraService, setCountDataExtraService] = useState<ExtraService[]>(dataExtraServices.map((item) => {
-        return {
-            ...item,
-            count: 1,
-        }
-    }));
+    const [countDataExtraService, setCountDataExtraService] = useState<ExtraService[]>(dataExtraServices);
 
 
-    const handleServiceToggle = (service: string, price: number) => {
+
+    const handleServiceToggle = (service: string, price: number, count: number) => {
         const isSelected = selectedServices.includes(service);
+        console.log("count: ", count);
+        console.log("service: ", service);
+
+        console.log("countDataExtraService: ", countDataExtraService);
+
+        const updatedCountDataExtraService = countDataExtraService.map((dataService) => {
+            if (dataService.value === service) {
+                return { ...dataService, count: count + (isSelected ? -1 : 1) };
+            }
+            return dataService;
+        });
 
         if (isSelected) {
             setSelectedServices(selectedServices.filter((s) => s !== service));
-            dispatch(setValue({ key: "extraServicesPrice", value: selectPrice - price}));
-            setSelectPrice(selectPrice - price);
+            dispatch(
+                setValue({
+                    key: "extraServicesPrice",
+                    value: selectPrice - price * count,
+                })
+            );
+            setSelectPrice((prevSelectPrice) => prevSelectPrice - price * count);
         } else {
             setSelectedServices([...selectedServices, service]);
-            dispatch(setExtraService({ value: service, price: selectPrice + price}));
-            dispatch(setValue({ key: "extraServicesPrice", value: selectPrice + price}));
-            setSelectPrice(selectPrice + price);
+            dispatch(
+                setExtraService({
+                    value: service,
+                    price: selectPrice + price,
+                    count: count,
+                })
+            );
+            dispatch(
+                setValue({
+                    key: "extraServicesPrice",
+                    value: selectPrice + price * count,
+                })
+            );
+            setSelectPrice((prevSelectPrice) => prevSelectPrice + price * count);
         }
+
+        setCountDataExtraService(updatedCountDataExtraService);
     };
 
+
     useEffect(() => {
-        handleServiceToggle("", 0);
+        console.log("countDataExtraService: ", countDataExtraService)
+        handleServiceToggle("", 0, 0);
     }, []);
 
 
@@ -97,7 +122,7 @@ export default function ExtraServicesComponent (props: ExtraServicesComponentPro
                             return (
                                 <TouchableOpacity
                                     key={item.value}
-                                    onPress={() => handleServiceToggle(item.value, item.price)}
+                                    onPress={() => handleServiceToggle(item.value, item.price, item.count)}
                                     style={[
                                         {
                                             width: "100%",
@@ -161,7 +186,7 @@ export default function ExtraServicesComponent (props: ExtraServicesComponentPro
                                                             setCountDataExtraService(countDataExtraService.map((item, i) => {
                                                                 if (i === index) {
                                                                     if (item.count < 1) {
-                                                                        handleServiceToggle(item.value, item.price);
+                                                                        handleServiceToggle(item.value, item.price, item.count);
                                                                     }
                                                                     return {
                                                                         ...item,
@@ -192,9 +217,7 @@ export default function ExtraServicesComponent (props: ExtraServicesComponentPro
                                                         >
                                                             {
                                                                 countDataExtraService[index].count === 0 ?
-                                                                    item.count
-                                                                    :
-                                                                    countDataExtraService[index].count
+                                                                    item.count : countDataExtraService[index].count
                                                             }
                                                         </SFProDisplayLight>
                                                     </View>
@@ -236,7 +259,7 @@ export default function ExtraServicesComponent (props: ExtraServicesComponentPro
                 {marginTop: height > 750 ? 0 : height - 115}
             ]}>
                 <View style={styles.extraServices__container_content_price}>
-                    <PriceDropdownComponent />
+                    <PriceDropdownComponent navigation={props.navigation}/>
                 </View>
                 <View style={styles.extraServices__container_next_button_wrap}>
                     <BookButtonComponent
