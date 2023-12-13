@@ -1,36 +1,28 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {View} from "../../Themed";
-import {Alert, Dimensions, ScrollView, StyleSheet} from "react-native";
+import {Dimensions, ScrollView, StyleSheet} from "react-native";
 import RadioGroup from "../bookComponents/BookRadioGroup";
 import {RadioButtonProps} from "../bookComponents/BookRadioButton";
 import HeaderComponent from "../../header/HeaderComponent";
-import BookBelowHeaderComponent from "../bookComponents/BookBelowHeaderComponent";
 import PriceDropdownComponent from "../bookComponents/PriceDropdownComponent";
 import BookButtonComponent from "../bookComponents/BookButtonComponent";
+import {useDispatch} from "react-redux";
+import {setValue} from "../../../reducers/bookReducer";
+import {SFProDisplayRegular} from "../../StyledText";
 
 
 interface ServiceTypeComponentProps {
-    serviceType: string;
-    serviceTypePrice: number;
-    totalPrice: number;
-    subTotalPrice: number;
-    taxPrice: number;
-    onUpdatePrices: (totalPrice: number, subTotalPrice: number, taxPrice: number) => void;
-    handleServiceType: (newServiceTypeSize: string) => void;
-    handleServiceTypePrice: (newServiceTypePrice: number) => void;
-    /*handleTotalPrice: () => void;
-    handleSubTotalPrice: () => void;
-    handleTaxPrice: () => void;
-    */
-    handleIsNavigateToApartmentSize: () => void;
-    handleIsNavigateToPropertyInformation: () => void;
+    navigation: any;
+    //handleIsNavigateToApartmentSize: () => void;
+    //handleIsNavigateToExtraServices: () => void;
 }
 
 export default function ServiceTypeComponent (props: ServiceTypeComponentProps) {
+    const dispatch = useDispatch();
     const [selectedServiceType, setSelectedServiceType] = useState('1' as string);
 
     const { height } = Dimensions.get('window');
-    const contentHeight = height > 750 ? height - 243 : height - 225;
+    //const contentHeight = height /*height > 750 ? height - 243 : height - 225*/;
 
     // @ts-ignore
     const radioButtons: RadioButtonProps[] = useMemo(() => ([
@@ -38,7 +30,7 @@ export default function ServiceTypeComponent (props: ServiceTypeComponentProps) 
             id: '1',
             label: 'Basic',
             value: 'Basic',
-            price: 49,
+            price: 12,
             clockwise: '',
         },
         {
@@ -46,41 +38,38 @@ export default function ServiceTypeComponent (props: ServiceTypeComponentProps) 
             label: 'Detailed',
             value: 'Detailed',
             price: 15,
-            clockwise: '/h',
+            clockwise: '',
         },
         {
             id: '3',
             label: 'Move in/out',
             value: 'Move in/out',
             price: 17,
-            clockwise: '/h',
+            clockwise: '',
         },
         {
             id: '4',
             label: 'After building',
             value: 'After building',
             price: 18,
-            clockwise: '/h',
+            clockwise: '',
         },
         {
             id: '5',
             label: 'After party',
             value: 'After party',
             price: 19,
-            clockwise: '/h',
+            clockwise: '',
         },
 
     ]), []);
 
     const handleServiceType = (newServiceType: string) => {
-        props.onUpdatePrices(
-            props.totalPrice,
-            props.subTotalPrice,
-            props.taxPrice);
-
-        props.handleServiceType(radioButtons[parseFloat(newServiceType) - 1].value as string);
-        props.handleServiceTypePrice(parseFloat(radioButtons[parseFloat(newServiceType) - 1].price!));
         setSelectedServiceType(newServiceType);
+        if (newServiceType) {
+            dispatch(setValue({ key: "serviceType", value: radioButtons[parseFloat(newServiceType) - 1].value as string}));
+            dispatch(setValue({ key: "serviceTypePrice", value: parseFloat(radioButtons[parseFloat(newServiceType) - 1].price!)}));
+        }
     }
 
     useEffect(() => {
@@ -91,20 +80,25 @@ export default function ServiceTypeComponent (props: ServiceTypeComponentProps) 
         <View style={styles.container}>
             <View style={styles.serviceType__container_header}>
                 <HeaderComponent
-                    title={"Book"}
+                    title={"Service type"}
                     isNotStartBookScreen={true}
-                    handleNavigateTo={props.handleIsNavigateToApartmentSize}/>
+                    numberOfPage={2}
+                    numberOfPages={8}
+                    handleNavigateTo={() => props.navigation.goBack()/*props.handleIsNavigateToApartmentSize*/}/>
             </View>
-            <View style={{height: contentHeight}}>
+            <View style={{height: height - 310}}>
                 <ScrollView style={styles.serviceType__container_content_wrap}>
-                    <View style={styles.serviceType__container_content_below_header_wrap}>
-                        <BookBelowHeaderComponent
-                            numberOfPage={2}
-                            numberOfPages={9}
-                            title={"Service type"}
-                        />
+                    <View style={styles.serviceType__container_content_description}>
+                        <SFProDisplayRegular style={styles.serviceType__container_content_description_text}>
+                            Prices have a fixed and a variable rate based on m<View style={styles.apartmentSize__container_content_label_square}><SFProDisplayRegular style={styles.apartmentSize__container_content_label_text_square}>2</SFProDisplayRegular></View>. If you add extra services, the price will update automatically.
+                        </SFProDisplayRegular>
                     </View>
-                    <View style={styles.serviceType__container_content}>
+                    <View style={[
+                        styles.serviceType__container_content,
+                        {
+                            height: height - 300,
+                        }
+                    ]}>
                         <RadioGroup
                             radioButtons={radioButtons}
                             onPress={(item) => handleServiceType(item)}
@@ -113,31 +107,19 @@ export default function ServiceTypeComponent (props: ServiceTypeComponentProps) 
                     </View>
                 </ScrollView>
             </View>
-            <View style={styles.serviceType__container_content_price_wrap}>
+            <View style={[
+                styles.serviceType__container_content_price_wrap,
+                {marginTop: height > 750 ? 0 : height - 115}
+            ]}>
                 <View style={styles.serviceType__container_content_price}>
-                    <PriceDropdownComponent
-                        priceComponents={
-                        [
-                            {
-                                value: radioButtons[parseFloat(selectedServiceType) - 1].value as string,
-                                price: parseFloat(radioButtons[parseFloat(selectedServiceType) - 1].price!)
-                            }
-                        ]}
-                        currentPrice={parseFloat(radioButtons[parseFloat(selectedServiceType) - 1].price!)}
-                        totalPrice={props.totalPrice/* + props.taxPrice + parseFloat(radioButtons[parseFloat(selectedServiceType) - 1].price!) * 0.21*/ /* + parseFloat(radioButtons[parseFloat(selectedServiceType) - 1].price!)*/}
-                        subTotalPrice={props.subTotalPrice/* + parseFloat(radioButtons[parseFloat(selectedServiceType) - 1].price!)*/}
-                        taxPrice={props.taxPrice/* + (parseFloat(radioButtons[parseFloat(selectedServiceType) - 1].price!)) * 0.21*/}
-                        handleTotalPrice={() => {}/*props.handleTotalPrice*/}
-                        handleSubTotalPrice={() => {}/*props.handleSubTotalPrice*/}
-                        handleTaxPrice={() => {}/*props.handleTaxPrice*/}
-                    />
+                    <PriceDropdownComponent />
                 </View>
                 <View style={styles.serviceType__container_next_button_wrap}>
                     <BookButtonComponent
                         backgroundButtonColor={selectedServiceType === '' ? "#256951cc" : "#268664"}
                         textButtonColor={selectedServiceType === '' ? "#00000033" : "#fff"}
                         textButtonContent={"Next"}
-                        handleNavigateTo={props.handleIsNavigateToPropertyInformation}
+                        handleNavigateTo={() => props.navigation.navigate('ExtraServices')/*props.handleIsNavigateToExtraServices*/}
                         inputValue={selectedServiceType}
                     />
                 </View>
@@ -152,19 +134,43 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     serviceType__container_header: {
-
+        paddingLeft: 16,
+        paddingRight: 16,
     },
     serviceType__container_content_wrap: {
-
+        paddingLeft: 16,
+        paddingRight: 16,
     },
     serviceType__container_content_below_header_wrap: {
 
     },
     serviceType__container_content: {
-        marginTop: 10,
+        marginTop: 20,
+    },
+    serviceType__container_content_description: {
+        marginTop: 20,
+    },
+    serviceType__container_content_description_text: {
+        color: "#3A3A3A",
+        fontSize: 16,
+        fontStyle: "normal",
+        fontWeight: "400",
+        letterSpacing: 0.32,
+    },
+    apartmentSize__container_content_label_square: {
+        paddingRight: 5,
+    },
+    apartmentSize__container_content_label_text_square: {
+        fontSize: 8,
+        fontWeight: "600",
+        lineHeight: 10,
+        position: "absolute",
+        top: -14,
     },
     serviceType__container_content_price_wrap: {
         flex: 1,
+        position: "absolute",
+        width: "100%",
     },
     serviceType__container_content_price: {
 

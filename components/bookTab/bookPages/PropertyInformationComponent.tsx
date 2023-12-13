@@ -8,6 +8,8 @@ import BookButtonComponent from "../bookComponents/BookButtonComponent";
 import PriceDropdownComponent from "../bookComponents/PriceDropdownComponent";
 import BookDropdownProperty from "../bookComponents/BookDropdownProperty";
 import BookDropdownPropertyComponent from "../bookComponents/BookDropdownPropertyComponent";
+import {useDispatch} from "react-redux";
+import {setValue} from "../../../reducers/bookReducer";
 
 const bedroomCountData: any[] = [
     {id: 0, count: 0, label: 0 + " bedroom", value: 0 + " bedroom", price: 0},
@@ -15,14 +17,13 @@ const bedroomCountData: any[] = [
     {id: 2, count: 2, label: 2 + " bedroom", value: 2 + " bedroom", price: 12},
     {id: 3, count: 3, label: 3 + " bedroom", value: 3 + " bedroom", price: 14},
     {id: 4, count: 4, label: 4 + " bedroom", value: 4 + " bedroom", price: 16},
-    {id: 5, count: 5, label: 5 + " bedroom", value: 5 + " bedroom", price: 18}
 ];
 
-const cleaningFrequencyTypeData: any[] = [
-    {id: 0, label: "Once", value: "Once", price: 0},
-    {id: 1, label: "Every week", value: "Every week", price: 30},
-    {id: 2, label: "Every 2 weeks", value: "Every 2 weeks", price: 20},
-    {id: 3, label: "Every 4 weeks", value: "Every 4 weeks", price: 10},
+const kitchenCountData: any[] = [
+    {id: 0, count: 0, label: 0 + " kitchen", value: 0 + " kitchen", price: 0},
+    {id: 1, count: 1, label: 1 + " kitchen", value: 1 + " kitchen", price: 10},
+    {id: 2, count: 2, label: 2 + " kitchen", value: 2 + " kitchen", price: 12},
+    {id: 3, count: 3, label: 3 + " kitchen", value: 3 + " kitchen", price: 14},
 ];
 
 const bathroomCountData: any[] = [
@@ -31,7 +32,6 @@ const bathroomCountData: any[] = [
     {id: 2, count: 2, label: 2 + " bathroom", value: 2 + " bathroom", price: 16},
     {id: 3, count: 3, label: 3 + " bathroom", value: 3 + " bathroom", price: 18},
     {id: 4, count: 4, label: 4 + " bathroom", value: 4 + " bathroom", price: 20},
-    {id: 5, count: 5, label: 5 + " bathroom", value: 5 + " bathroom", price: 22}
 ];
 
 const dirtyDegreeData: any[] = [
@@ -41,35 +41,15 @@ const dirtyDegreeData: any[] = [
 ];
 
 interface PropertyInformationComponentProps {
-    bedRoomCount: number;
-    bedRoomCountPrice: number;
-    cleaningFrequencyType: string;
-    cleaningFrequencyTypePrice: number;
-    bathRoomCount: number;
-    bathRoomCountPrice: number;
-    dirtyDegree: string;
-    dirtyDegreePrice: number;
-    totalPrice: number;
-    subTotalPrice: number;
-    taxPrice: number;
-    serviceType: string;
-    serviceTypePrice: number;
-    onUpdatePrices: (totalPrice: number, subTotalPrice: number, taxPrice: number) => void;
-    handleBedRoomCount: (newRoomCount: number) => void;
-    handleBedRoomCountPrice: (newRoomCountPrice: number) => void;
-    handleCleaningFrequencyType: (newCleaningFrequencyType: string) => void;
-    handleCleaningFrequencyTypePrice: (newCleaningFrequencyTypePrice: number) => void;
-    handleBathRoomCount: (newBathRoomCount: number) => void;
-    handleBathRoomCountPrice: (newBathRoomCountPrice: number) => void;
-    handleDirtyDegree: (newDirtyDegree: string) => void;
-    handleDirtyDegreePrice: (newDirtyDegreePrice: number) => void;
-    handleIsNavigateToServiceType: () => void;
     handleIsNavigateToExtraServices: () => void;
+    handleIsNavigateToDateTime: () => void;
 }
 
 export default function PropertyInformationComponent (props: PropertyInformationComponentProps) {
+    const dispatch = useDispatch();
+
     const [roomCount, setRoomCount] = useState(0);
-    const [cleaningFrequencyTypeCount, setCleaningFrequencyTypeCount] = useState(0);
+    const [kitchenCount, setKitchenCount] = useState(0);
     const [bathRoomCount, setBathRoomCount] = useState(0);
     const [dirtyDegreeCount, setDirtyDegreeCount] = useState(0);
 
@@ -77,88 +57,63 @@ export default function PropertyInformationComponent (props: PropertyInformation
 
 
     const { height } = Dimensions.get('window');
-    const contentHeight = height > 750 ? height - 243 : height - 225;
+    //const contentHeight = height > 750 ? height - 243 : height - 225;
 
     const handleBedRoomCount = (newRoomCount: any) => {
-        props.onUpdatePrices(
-            props.totalPrice,
-            props.subTotalPrice,
-            props.taxPrice);
-        console.log("newRoomCount: ", newRoomCount);
+        dispatch(setValue({ key: "bedroomCount", value: newRoomCount}));
 
-        props.handleBedRoomCount(newRoomCount);
         if (newRoomCount > 0) {
-            props.handleBedRoomCountPrice(bedroomCountData[newRoomCount].price);
+            dispatch(setValue({ key: "bedroomCountPrice", value: bedroomCountData[newRoomCount].price}))
         }
         if (newRoomCount === 0) {
-            props.handleBedRoomCountPrice(bedroomCountData[0].price);
+            dispatch(setValue({ key: "bedroomCountPrice", value: bedroomCountData[0].price}))
         }
+
         setRoomCount(newRoomCount);
     }
 
-    const handleCleaningFrequencyCount = (newCleaningFrequencyCount: any) => {
-        props.onUpdatePrices(
-            props.totalPrice,
-            props.subTotalPrice,
-            props.taxPrice);
-        console.log("newCleaningFrequencyCount: ", newCleaningFrequencyCount);
+    const handleKitchenCount = (newKitchenCount: any) => {
+        dispatch(setValue({ key: "kitchenCount", value: newKitchenCount}));
 
-
-        if (newCleaningFrequencyCount > 0) {
-            props.handleCleaningFrequencyType(cleaningFrequencyTypeData[newCleaningFrequencyCount]);
-            props.handleCleaningFrequencyTypePrice(cleaningFrequencyTypeData[newCleaningFrequencyCount].price);
+        if (newKitchenCount > 0) {
+            dispatch(setValue({ key: "kitchenCountPrice", value: kitchenCountData[newKitchenCount].price}))
         }
-        if (newCleaningFrequencyCount === 0) {
-
-            props.handleCleaningFrequencyTypePrice(cleaningFrequencyTypeData[0].price);
+        if (newKitchenCount === 0) {
+            dispatch(setValue({ key: "kitchenCountPrice", value: kitchenCountData[0].price}))
         }
-        setCleaningFrequencyTypeCount(newCleaningFrequencyCount);
+        setKitchenCount(newKitchenCount);
     }
 
     const handleBathRoomCount = (newBathRoomCount: any) => {
-        props.onUpdatePrices(
-            props.totalPrice,
-            props.subTotalPrice,
-            props.taxPrice);
-        console.log("newBathRoomCount: ", newBathRoomCount);
+        dispatch(setValue({ key: "bathroomCount", value: newBathRoomCount}));
 
-        props.handleBathRoomCount(newBathRoomCount);
         if (newBathRoomCount > 0) {
-            props.handleBathRoomCountPrice(bathroomCountData[newBathRoomCount].price);
+            dispatch(setValue({ key: "bathroomCountPrice", value: bathroomCountData[newBathRoomCount].price}))
         }
         if (newBathRoomCount === 0) {
-            props.handleBathRoomCountPrice(bathroomCountData[0].price);
+            dispatch(setValue({ key: "bathroomCountPrice", value: bathroomCountData[0].price}))
         }
+
         setBathRoomCount(newBathRoomCount);
     }
 
     const handleDirtyDegreeCount = (newDirtyDegreeCount: any) => {
-        props.onUpdatePrices(
-            props.totalPrice,
-            props.subTotalPrice,
-            props.taxPrice);
-        console.log("newDirtyDegreeCount: ", newDirtyDegreeCount);
-
-        props.handleDirtyDegree(newDirtyDegreeCount);
         if (newDirtyDegreeCount > 0) {
-            props.handleDirtyDegreePrice(dirtyDegreeData[newDirtyDegreeCount].price);
+            dispatch(setValue({ key: "dirtyDegree", value: dirtyDegreeData[newDirtyDegreeCount].value}));
+            dispatch(setValue({ key: "dirtyDegreePrice", value: dirtyDegreeData[newDirtyDegreeCount].price}))
         }
         if (newDirtyDegreeCount === 0) {
-            props.handleDirtyDegreePrice(dirtyDegreeData[0].price);
+            dispatch(setValue({ key: "dirtyDegree", value: dirtyDegreeData[newDirtyDegreeCount].value}));
+            dispatch(setValue({ key: "dirtyDegreePrice", value: dirtyDegreeData[0].price}))
         }
+
         setDirtyDegreeCount(newDirtyDegreeCount);
     }
 
-    const handleScrollToY = (y: number) => {
-        console.log("y: ", y);
-
-    }
 
     useEffect(() => {
-        console.log("height: ", height);
-        console.log("contentHeight: ", contentHeight);
         handleBedRoomCount(roomCount);
-        handleCleaningFrequencyCount(cleaningFrequencyTypeCount);
+        handleKitchenCount(kitchenCount);
         handleBathRoomCount(bathRoomCount);
         handleDirtyDegreeCount(dirtyDegreeCount);
     }, [isOpenDropdown]);
@@ -167,21 +122,24 @@ export default function PropertyInformationComponent (props: PropertyInformation
         <View style={styles.container}>
             <View style={styles.propertyInformation__container_header}>
                 <HeaderComponent
-                    title={"Book"}
+                    title={"Property information"}
                     isNotStartBookScreen={true}
-                    handleNavigateTo={props.handleIsNavigateToServiceType}
+                    numberOfPage={4}
+                    numberOfPages={10}
+                    handleNavigateTo={props.handleIsNavigateToExtraServices}
                     />
             </View>
-            <View style={{height: contentHeight}}>
-                <ScrollView>
-                    <View style={styles.propertyInformation__container_content_below_header_wrap}>
-                        <BookBelowHeaderComponent
-                            numberOfPage={3}
-                            numberOfPages={9}
-                            title={"Property information"}
-                        />
-                    </View>
-                    <View style={styles.propertyInformation__container_content}>
+            <View style={{
+                height: height - 310,
+                marginTop: 100,
+            }}>
+                <ScrollView style={styles.propertyInformation__container_content_wrap}>
+                    <View style={[
+                        styles.propertyInformation__container_content,
+                        {
+                            height: height - 300,
+                        }
+                    ]}>
                         <View style={[styles.propertyInformation__container_content_bedrooms_count_wrap,
                             {
                                 //backgroundColor: "#21d37a",
@@ -198,13 +156,13 @@ export default function PropertyInformationComponent (props: PropertyInformation
                                 />
                         </View>
 
-                        <View style={styles.propertyInformation__container_content_frequency_count_wrap}>
+                        <View style={styles.propertyInformation__container_content_kitchen_count_wrap}>
                             <BookDropdownPropertyComponent
-                                title="How often?"
-                                data={cleaningFrequencyTypeData}
-                                value={cleaningFrequencyTypeData[cleaningFrequencyTypeCount - 1] ? cleaningFrequencyTypeData[cleaningFrequencyTypeCount].value : cleaningFrequencyTypeData[0].value}
-                                placeholder={cleaningFrequencyTypeData[0].label}
-                                handleValue={handleCleaningFrequencyCount}
+                                title="How many kitchens?"
+                                data={kitchenCountData}
+                                value={kitchenCountData[kitchenCount - 1] ? kitchenCountData[kitchenCount].value : kitchenCountData[0].value}
+                                placeholder={kitchenCountData[0].label}
+                                handleValue={handleKitchenCount}
                                 handleIsOpenDropdown={setIsOpenDropdown}
                             />
                         </View>
@@ -234,29 +192,19 @@ export default function PropertyInformationComponent (props: PropertyInformation
                     </View>
                 </ScrollView>
             </View>
-            <View style={styles.propertyInformation__container_content_price_wrap}>
+            <View style={[
+                styles.propertyInformation__container_content_price_wrap,
+                {marginTop: height > 750 ? 0 : height - 125}
+            ]}>
                 <View style={styles.propertyInformation__container_content_price}>
-                    <PriceDropdownComponent
-                        priceComponents={[
-                            {
-                                value: props.serviceType,
-                                price: props.serviceTypePrice,
-                            }]}
-                        currentPrice={props.subTotalPrice}
-                        totalPrice={props.totalPrice/* + bedroomCountData[roomCount -1] ? bedroomCountData[roomCount - 1].price : bedroomCountData[0].price + (props.totalPrice + bedroomCountData[roomCount -1] ? bedroomCountData[roomCount - 1].price : bedroomCountData[0].price) * 0.21*/}
-                        subTotalPrice={props.subTotalPrice/* + bedroomCountData[roomCount -1] ? bedroomCountData[roomCount - 1].price : bedroomCountData[0].price*/}
-                        taxPrice={props.taxPrice/* + bedroomCountData[roomCount -1] ? bedroomCountData[roomCount - 1].price : bedroomCountData[0].price) * 0.21*/}
-                        handleTotalPrice={() => {}/*props.handleTotalPrice*/}
-                        handleSubTotalPrice={() => {}/*props.handleSubTotalPrice*/}
-                        handleTaxPrice={() => {}/*props.handleTaxPrice*/}
-                    />
+                    <PriceDropdownComponent/>
                 </View>
                 <View style={styles.propertyInformation__container_next_button_wrap}>
                     <BookButtonComponent
                         backgroundButtonColor={"#268664"}
                         textButtonColor={"#fff"}
                         textButtonContent={"Next"}
-                        handleNavigateTo={props.handleIsNavigateToExtraServices}
+                        handleNavigateTo={props.handleIsNavigateToDateTime}
                         inputValue={bedroomCountData[0].label}
                     />
                 </View>
@@ -271,16 +219,18 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     propertyInformation__container_header: {
-
+        paddingLeft: 16,
+        paddingRight: 16,
     },
     propertyInformation__container_content_wrap: {
-
+        paddingLeft: 16,
+        paddingRight: 16,
     },
     propertyInformation__container_content_below_header_wrap: {
 
     },
     propertyInformation__container_content: {
-        marginTop: 20,
+        marginTop: 30,
         // backgroundColor: "#0f8a08",
         height: 630,
         justifyContent: "flex-start",
@@ -304,7 +254,7 @@ const styles = StyleSheet.create({
         height: 85,
     },
 
-    propertyInformation__container_content_frequency_count_wrap: {
+    propertyInformation__container_content_kitchen_count_wrap: {
         marginTop: 10,
         height: 85,
     },
@@ -320,7 +270,9 @@ const styles = StyleSheet.create({
     },
 
     propertyInformation__container_content_price_wrap: {
-
+        flex: 1,
+        position: "absolute",
+        width: "100%",
     },
     propertyInformation__container_content_price: {
 

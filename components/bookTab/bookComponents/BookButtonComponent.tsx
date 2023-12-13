@@ -2,6 +2,7 @@ import {View} from "../../Themed";
 import {Alert, Dimensions, StyleSheet, TouchableHighlight} from "react-native";
 import {SFProDisplayMedium} from "../../StyledText";
 import React from "react";
+import {Shadow} from "react-native-shadow-2";
 
 interface BookButtonComponentProps {
     backgroundButtonColor: string;
@@ -34,6 +35,35 @@ export default function BookButtonComponent(props: BookButtonComponentProps) {
                     {props.textButtonContent}
                 </SFProDisplayMedium>
             </TouchableHighlight>
+            <View style={{
+                width: "100%",
+                paddingLeft: 16,
+                paddingRight: 16,
+            }}>
+                <Shadow
+                    startColor={"rgb(255,255,255)"}
+                    endColor={"rgb(255,255,255)"}
+                    distance={50}
+                    offset={[0, 20]}
+                    paintInside={false}
+                    style={{
+                        width: "100%",
+                    }}
+                    sides={{
+                        start: true,
+                        end: false,
+                        top: true,
+                        bottom: false,
+                    }}
+                    corners={{
+                        topStart: true,
+                        topEnd: true,
+                        bottomStart: false,
+                        bottomEnd: false,
+                    }}
+                >
+                </Shadow>
+            </View>
         </View>
     )
 }
@@ -42,6 +72,9 @@ const styles = StyleSheet.create({
     container: {
         width: "100%",
         flex: 1,
+        paddingLeft: 16,
+        paddingRight: 16,
+        //marginTop: -50,
     },
     bookButton__container_content_wrap: {
 

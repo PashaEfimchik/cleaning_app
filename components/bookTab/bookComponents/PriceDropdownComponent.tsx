@@ -1,45 +1,68 @@
 import {View} from "../../Themed";
-import {Dimensions, StyleSheet, TouchableHighlight} from "react-native";
+import {Dimensions, StyleSheet} from "react-native";
 import React, {useEffect, useState} from "react";
 import {SFProDisplayBold, SFProDisplayLight, SFProDisplayRegular, SFProDisplaySemibold} from "../../StyledText";
 import Svg, {Path} from "react-native-svg";
 import { Shadow } from 'react-native-shadow-2';
+import {useDispatch, useSelector} from "react-redux";
+import {RootState} from "../../../store/store";
+import {setValue} from "../../../reducers/bookReducer";
 
-interface PriceDropdownComponentProps {
-    priceComponents: {value: string, price: number}[],
-    currentPrice: number,
-    totalPrice: number,
-    subTotalPrice: number,
-    taxPrice: number,
-    handleTotalPrice: () => void,
-    handleSubTotalPrice: () => void,
-    handleTaxPrice: () => void,
-}
-
-export default function PriceDropdownComponent (props: PriceDropdownComponentProps) {
+export default function PriceDropdownComponent () {
+    const dispatch = useDispatch();
     const [isOpenFullPriceList, setIsOpenFullPriceList] = useState(false as boolean);
+
+    const apartmentSizePrice = useSelector((state: RootState) => state.book.apartmentSizePrice);
+    const serviceType = useSelector((state: RootState) => state.book.serviceType);
+    const serviceTypePrice = useSelector((state: RootState) => state.book.serviceTypePrice);
+    const extraServicesPrice = useSelector((state: RootState) => state.book.extraServicesPrice);
+
+    const bedroomCountPrice = useSelector((state: RootState) => state.book.bedroomCountPrice);
+    const kitchenCountPrice = useSelector((state: RootState) => state.book.kitchenCountPrice);
+    const bathroomCountPrice = useSelector((state: RootState) => state.book.bathroomCountPrice);
+    const dirtyDegreePrice = useSelector((state: RootState) => state.book.dirtyDegreePrice);
+
+    const cleaningFrequencyType = useSelector((state: RootState) => state.book.cleaningFrequencyType);
+
+    const subTotalPrice =
+        apartmentSizePrice +
+        serviceTypePrice +
+        extraServicesPrice +
+        bedroomCountPrice +
+        kitchenCountPrice +
+        bathroomCountPrice +
+        dirtyDegreePrice
+    ;
+    const taxPrice = subTotalPrice * 0.21;
+    const totalPrice = subTotalPrice + taxPrice;
+
+    useEffect(() => {
+        dispatch(setValue({ key: "subTotalPrice", value: subTotalPrice }));
+        dispatch(setValue({ key: "taxPrice", value: taxPrice }));
+        dispatch(setValue({ key: "totalPrice", value: totalPrice }));
+    }, [totalPrice]);
+
+    //const totalPrice = useSelector((state: RootState) => state.book.totalPrice);
+    //const subTotalPrice = useSelector((state: RootState) => state.book.subTotalPrice);
+    //const taxPrice = useSelector((state: RootState) => state.book.taxPrice);
 
     const { height } = Dimensions.get('window');
     const { width } = Dimensions.get('window');
-
-    useEffect(() => {
-        console.log("-------------------------");
-        console.log(" - PriceDropdown start - ");
-        console.log("priceComponents[]: ", props.priceComponents);
-        console.log("currentPrice: ", props.currentPrice);
-        console.log("totalPrice: ", props.totalPrice);
-        console.log("subTotalPrice: ", props.subTotalPrice);
-        console.log("taxPrice: ", props.taxPrice);
-        console.log(" - PriceDropdown end - ");
-        console.log("-------------------------");
-    }, [props.currentPrice]);
 
     return (
         <View style={styles.container}>
             {
                 isOpenFullPriceList && (
-                    <View style={{}}>
-
+                    <View style={{
+                        width: width,
+                        backgroundColor: "rgba(0, 0, 0, 0.50)",
+                        height: height - 333,
+                        position: "absolute",
+                        top: 105 - height, //97
+                        left: 0,
+                    }}
+                          onTouchStart={() => setIsOpenFullPriceList(false)}
+                    >
                     </View>
                 )
             }
@@ -49,8 +72,8 @@ export default function PriceDropdownComponent (props: PriceDropdownComponentPro
                     (
                         <View
                             style={[styles.priceDropdown__container_price_content_open, {
-                                height: props.priceComponents.length > 0 ? 270 : 230,
-                                marginTop: props.priceComponents.length > 0 ? -266 : -236,
+                                height: extraServicesPrice > 0 ? 270 : 230,
+                                marginTop: extraServicesPrice > 0 ? -276 : -246,
                             }]}
                             onTouchStart={() => setIsOpenFullPriceList(false)}
                         >
@@ -86,27 +109,50 @@ export default function PriceDropdownComponent (props: PriceDropdownComponentPro
                                     <SFProDisplayRegular
                                         style={styles.priceDropdown__container_price_content_close_price_cost_text}
                                     >
-                                        €{isNaN(props.subTotalPrice) ? '' : props.subTotalPrice.toFixed(2)}
+                                        €{isNaN(subTotalPrice) ? '' : subTotalPrice.toFixed(2)}
                                     </SFProDisplayRegular>
                                 </View>
                             </View>
                             <View style={styles.priceDropdown__container_price_content_open_tax_price_wrap}>
                                 {
-                                    props.priceComponents.length > 0 && (
+                                    serviceType && (
                                         <View style={styles.priceDropdown__container_price_content_open_service_type}>
-                                            <SFProDisplayBold style={styles.priceDropdown__container_price_content_open_service_type_text}>
+                                            <View style={styles.priceDropdown__container_price_content_open_service_type_wrap}>
+                                                <SFProDisplayBold style={styles.priceDropdown__container_price_content_open_service_type_text}>{
+                                                        serviceType
+                                                    } </SFProDisplayBold>
                                                 {
-                                                    props.priceComponents[0].value
+                                                    cleaningFrequencyType && (
+                                                        <SFProDisplayBold style={styles.priceDropdown__container_price_content_open_service_type_text}>
+                                                            ({cleaningFrequencyType})
+                                                        </SFProDisplayBold>
+                                                    )
                                                 }
-                                            </SFProDisplayBold>
+                                            </View>
                                             <SFProDisplayBold style={styles.priceDropdown__container_price_content_open_service_type_text}>
                                                 €{
-                                                props.priceComponents[0].price
+                                                    serviceTypePrice
                                                 }
                                             </SFProDisplayBold>
                                         </View>
                                     )
                                 }
+                                <View>
+                                    {
+                                        extraServicesPrice > 0 && (
+                                            <View style={styles.priceDropdown__container_price_content_open_extra_service_type}>
+                                                <SFProDisplayLight style={styles.priceDropdown__container_price_content_open_extra_service_type_text}>
+                                                    Extra services
+                                                </SFProDisplayLight>
+                                                <SFProDisplayLight style={styles.priceDropdown__container_price_content_open_extra_service_type_text}>
+                                                    €{
+                                                    extraServicesPrice
+                                                }
+                                                </SFProDisplayLight>
+                                            </View>
+                                        )
+                                    }
+                                </View>
                                 <View style={{flexDirection: "row"}}>
                                     <View
                                         style={{
@@ -128,7 +174,7 @@ export default function PriceDropdownComponent (props: PriceDropdownComponentPro
                                         <SFProDisplayRegular
                                             style={styles.priceDropdown__container_price_content_open_tax_price_cost_text}
                                         >
-                                            €{isNaN(props.subTotalPrice) ? '' : props.subTotalPrice.toFixed(2)}
+                                            €{isNaN(subTotalPrice) ? '' : subTotalPrice.toFixed(2)}
                                         </SFProDisplayRegular>
                                     </View>
                                 </View>
@@ -141,7 +187,7 @@ export default function PriceDropdownComponent (props: PriceDropdownComponentPro
                                         <SFProDisplayRegular
                                             style={styles.priceDropdown__container_price_content_open_tax_price_cost_text}
                                         >
-                                            €{isNaN(props.taxPrice) ? '' : props.taxPrice.toFixed(2)}
+                                            €{isNaN(taxPrice) ? '' : taxPrice.toFixed(2)}
                                         </SFProDisplayRegular>
                                     </View>
                                 </View>
@@ -172,7 +218,7 @@ export default function PriceDropdownComponent (props: PriceDropdownComponentPro
                                     <SFProDisplaySemibold
                                         style={styles.priceDropdown__container_price_content_open_total_price_cost_text}
                                     >
-                                        €{isNaN(props.totalPrice) ? '' : props.totalPrice.toFixed(2)}
+                                        €{isNaN(totalPrice) ? '' : totalPrice.toFixed(2)}
                                     </SFProDisplaySemibold>
                                 </View>
                             </View>
@@ -186,6 +232,8 @@ export default function PriceDropdownComponent (props: PriceDropdownComponentPro
                             paintInside={false}
                             style={{
                                 width: "100%",
+                                paddingLeft: 16,
+                                paddingRight: 16,
                             }}
                             sides={{
                                 start: false,
@@ -198,7 +246,7 @@ export default function PriceDropdownComponent (props: PriceDropdownComponentPro
                                 topEnd: true,
                                 bottomStart: false,
                                 bottomEnd: false,
-                                }}
+                            }}
                         >
                         <View
                             style={styles.priceDropdown__container_price_content_close}
@@ -236,7 +284,7 @@ export default function PriceDropdownComponent (props: PriceDropdownComponentPro
                                 <SFProDisplayRegular
                                     style={styles.priceDropdown__container_price_content_close_price_cost_text}
                                 >
-                                    €{isNaN(props.subTotalPrice) ? '' : props.subTotalPrice.toFixed(2)}
+                                    €{isNaN(subTotalPrice) ? '' : subTotalPrice.toFixed(2)}
                                 </SFProDisplayRegular>
                             </View>
                         </View>
@@ -252,6 +300,8 @@ const styles = StyleSheet.create({
     container: {
         width: "100%",
         flex: 1,
+        //backgroundColor: "#8f8",
+        borderRadius: 4,
     },
 
     priceDropdown__container_price_content_open_service_type: {
@@ -262,9 +312,23 @@ const styles = StyleSheet.create({
         paddingBottom: 10,
 */
     },
+    priceDropdown__container_price_content_open_service_type_wrap: {
+        flexDirection: "row",
+    },
+    priceDropdown__container_price_content_open_extra_service_type: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingTop: 10,
+    },
     priceDropdown__container_price_content_open_service_type_text: {
         color: "#3A3A3A",
         fontWeight: "700",
+        fontSize: 18,
+        letterSpacing: 0.36,
+    },
+    priceDropdown__container_price_content_open_extra_service_type_text: {
+        color: "#3A3A3A",
+        fontWeight: "300",
         fontSize: 18,
         letterSpacing: 0.36,
     },
@@ -276,11 +340,16 @@ const styles = StyleSheet.create({
         paddingBottom: 40,*/
 /*        marginTop: -84,*/
         width: '100%',
+
     },
     priceDropdown__container_price_content_open_price_wrap: {
         flexDirection: 'row',
         paddingTop: 20,
         paddingBottom: 10,
+        //borderTopLeftRadius: 4,
+        //borderTopRightRadius: 4,
+        //paddingLeft: 16,
+        //paddingRight: 16,
     },
     priceDropdown__container_price_content_close_button_wrap: {
         width: 20,
@@ -332,6 +401,8 @@ const styles = StyleSheet.create({
         flex: 1,
         borderTopLeftRadius: 4,
         borderTopRightRadius: 4,
+        paddingLeft: 16,
+        paddingRight: 16,
         // backgroundColor: '#1258bb',
     },
     priceDropdown__container_price_content_close_text: {
@@ -353,6 +424,7 @@ const styles = StyleSheet.create({
         fontStyle: 'normal',
         fontWeight: '400',
         lineHeight: 24,
+
     },
 
     priceDropdown__container_price_content_open_subTotal_price: {
@@ -360,6 +432,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginTop: 20,
+
     },
     priceDropdown__container_price_content_open_tax_price: {
         // backgroundColor: "#270aa6",
